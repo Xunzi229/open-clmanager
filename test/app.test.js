@@ -35,12 +35,19 @@ test('同名节点和策略组独立隔离，规则目标被重写', () => {
   const a = source('A'), b = source('A');
   const result = mergeSubscriptions([a, b].map(s => ({ source: s, config: parseSubscription(fixture) })), 'first');
   assert.equal(result.proxies.length, 2);
-  assert.notEqual(result.proxies[0].name, result.proxies[1].name);
+  assert.equal(result.proxies[0].name, 'A / 香港');
+  assert.equal(result.proxies[1].name, 'A (2) / 香港');
+  assert.ok(!result.proxies.some(proxy => proxy.name.includes(a.id.slice(0, 8)) || proxy.name.includes(b.id.slice(0, 8))));
   assert.equal(result['proxy-groups'][1].proxies[0], result.proxies[0].name);
   assert.equal(result['proxy-groups'][2].proxies[0], result.proxies[1].name);
   assert.equal(result.rules[0], `DOMAIN-SUFFIX,example.org,${result['proxy-groups'][1].name}`);
   assert.equal(result.rules[1], 'IP-CIDR,10.0.0.0/8,DIRECT,no-resolve');
   assert.equal(result.rules.length, 3);
+});
+test('部分来源失效时，同名订阅的别名仍保持稳定', () => {
+  const a = source('A'), b = source('A');
+  const result = mergeSubscriptions([{ source: b, config: parseSubscription(fixture) }], 'unified', [a, b]);
+  assert.equal(result.proxies[0].name, 'A (2) / 香港');
 });
 test('provider 引用、缓存路径、逻辑规则和 include-all 隔离', () => {
   const s = source('A'); const config = parseSubscription(fixture);

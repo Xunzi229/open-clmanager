@@ -140,12 +140,12 @@ export class SubscriptionService {
   }
   async subscription() {
     const { entries, skipped, stale, snapshot } = await this.resolvedEntries();
-    const body = YAML.stringify(mergeSubscriptions(entries, snapshot.ruleMode));
+    const body = YAML.stringify(mergeSubscriptions(entries, snapshot.ruleMode, snapshot.sources.filter(source => source.enabled)));
     return { body: `# Clash Merge · available=${entries.length}, skipped=${skipped}, stale=${stale}\n${body}`, skipped, stale };
   }
   async v2raynSubscription() {
-    const { entries, skipped: sourceSkipped, stale } = await this.resolvedEntries();
-    const proxies = mergeSubscriptions(entries, 'unified').proxies;
+    const { entries, skipped: sourceSkipped, stale, snapshot } = await this.resolvedEntries();
+    const proxies = mergeSubscriptions(entries, 'unified', snapshot.sources.filter(source => source.enabled)).proxies;
     const result = makeV2rayNSubscription(proxies);
     if (!result.count) throw new UserError('没有可转换为 v2rayN 链接的静态节点');
     return { ...result, sourceSkipped, stale };

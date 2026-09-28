@@ -35,12 +35,18 @@ export function parseSubscription(text) {
   return doc;
 }
 
-export function mergeSubscriptions(entries, ruleMode = 'unified') {
+export function mergeSubscriptions(entries, ruleMode = 'unified', allSources = entries.map(entry => entry.source)) {
   if (!entries.length) throw new Error('没有可用订阅');
   const proxies = [], groups = [], providers = {}, ruleProviders = {}, choices = [], uses = [];
+  const labels = new Map(), usedLabels = new Set();
+  for (const source of allSources) {
+    let label = source.name, suffix = 2;
+    while (usedLabels.has(label)) label = `${source.name} (${suffix++})`;
+    usedLabels.add(label); labels.set(source.id, label);
+  }
   let firstRules = [];
   entries.forEach(({ source, config }, index) => {
-    const prefix = `${source.name} · ${source.id.slice(0, 8)} / `;
+    const prefix = `${labels.get(source.id) || source.name} / `;
     const rename = name => BUILTINS.has(name) ? name : prefix + name;
     const localProxyNames = (config.proxies || []).map(p => rename(p.name));
     const localProviderNames = Object.keys(config['proxy-providers'] || {}).map(rename);
