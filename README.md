@@ -6,7 +6,7 @@
 
 ## 桌面版
 
-在 GitHub 仓库的 **Actions → Build desktop clients** 中手动运行工作流，或推送 `v1.0.5` 这类版本标签。构建完成后，从该次运行的 Artifacts 下载对应系统安装包。Windows 生成安装版与便携版，macOS 的 Intel 与 Apple 芯片版本均生成 DMG 与 ZIP，Linux 生成 AppImage。产物文件名包含应用名、版本、系统和架构。Windows 也可在本地运行 `npm run dist:win`，产物位于 `dist` 目录。
+在 GitHub 仓库的 **Actions → Build desktop clients** 中手动运行工作流，或推送 `v1.0.5` 这类版本标签。推送版本标签时，四个平台的构建通过后会自动创建 GitHub Release 并上传安装包。Windows 生成安装版与便携版，macOS 的 Intel 与 Apple 芯片版本均生成 DMG 与 ZIP，Linux 生成 AppImage。产物文件名包含应用名、版本、系统和架构。手动运行工作流时可填写已有版本标签的 `publish_tag` 来发布 Release。Windows 也可在本地运行 `npm run dist:win`，产物位于 `dist` 目录。
 
 桌面程序打开后自动启动本地服务；点击「停止服务」会关闭监听端口，停止页可再次启动。窗口顶部可修改端口，范围 1024～65535；更改后会重启服务，统一订阅地址随端口更新。端口与订阅数据保存在系统应用数据目录，关闭并重新打开程序后仍会保留。**端口改变后，需要在 Clash 客户端更新订阅地址。** 关闭桌面程序会停止服务。
 

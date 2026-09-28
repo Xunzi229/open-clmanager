@@ -1,6 +1,11 @@
 name: Build desktop clients
 on:
   workflow_dispatch:
+    inputs:
+      publish_tag:
+        description: '可选：构建完成后发布已有版本标签（如 v1.0.5）'
+        required: false
+        type: string
   push:
     tags:
       - 'v*'
@@ -50,3 +55,27 @@ jobs:
             dist/*.zip
             dist/*.AppImage
           if-no-files-found: error
+  release:
+    needs: package
+    if: github.ref_type == 'tag' || inputs.publish_tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Clash-Merge-*
+          path: release-assets
+          merge-multiple: true
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH_TAG: ${{ inputs.publish_tag || github.ref_name }}
+        run: |
+          expected="v$(node -p 'require("./package.json").version')"
+          test "$PUBLISH_TAG" = "$expected"
+          files=(release-assets/*)
+          test "${#files[@]}" -eq 7
+          gh release create "$PUBLISH_TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --title "Clash Merge $PUBLISH_TAG" --generate-notes --verify-tag
