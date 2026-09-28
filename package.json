@@ -1,6 +1,6 @@
 {
   "name": "clash-merge",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "本地 Clash 订阅合并与缓存服务",
   "main": "desktop/main.cjs",
   "scripts": {
@@ -60,7 +60,11 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}-${version}-${os}-${arch}-setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${os}-${arch}-portable.${ext}"
     },
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   }
