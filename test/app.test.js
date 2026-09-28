@@ -139,6 +139,9 @@ test('HTTP 路由、令牌、跨域和配置持久化', async t => {
   t.after(() => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }));
   const base = `http://127.0.0.1:${server.address().port}`;
   assert.equal((await fetch(base)).status, 200);
+  const icon = await fetch(base + '/icon.png');
+  assert.equal(icon.status, 200); assert.equal(icon.headers.get('content-type'), 'image/png');
+  assert.deepEqual(Buffer.from(await icon.arrayBuffer()).subarray(0, 8), Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
   assert.equal((await fetch(base + '/sub?token=bad')).status, 401);
   assert.equal((await fetch(base + '/api/config', { headers: { Origin: 'https://evil.example' } })).status, 403);
   const rejectedHost = await new Promise((resolve, reject) => {

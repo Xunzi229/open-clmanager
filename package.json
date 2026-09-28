@@ -1,6 +1,6 @@
 {
   "name": "clash-merge",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "本地 Clash 订阅合并与缓存服务",
   "main": "desktop/main.cjs",
   "scripts": {
@@ -40,12 +40,14 @@
     ],
     "asar": true,
     "win": {
+      "icon": "desktop/assets/icon.ico",
       "target": [
         "nsis",
         "portable"
       ]
     },
     "mac": {
+      "icon": "desktop/assets/icon.icns",
       "target": [
         "dmg",
         "zip"
@@ -53,6 +55,7 @@
       "category": "public.app-category.utilities"
     },
     "linux": {
+      "icon": "desktop/assets/linux",
       "target": [
         "AppImage"
       ],

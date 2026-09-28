@@ -2,9 +2,11 @@
 
 本地运行的 Clash / Mihomo 订阅合并器，提供中文配置界面、Clash 与 v2rayN 两种订阅 URL。可使用桌面版，也可作为 Node.js 服务或 Docker 容器运行。
 
+桌面程序使用 `desktop/assets/source.png` 作为图标原图。Windows、macOS、Linux 图标和界面图标已生成并纳入项目；更换原图后，可安装 Pillow 并运行 `python scripts/generate-icons.py` 重新生成。
+
 ## 桌面版
 
-在 GitHub 仓库的 **Actions → Build desktop clients** 中手动运行工作流，或推送 `v1.0.4` 这类版本标签。构建完成后，从该次运行的 Artifacts 下载对应系统安装包。Windows 生成安装版与便携版，macOS 的 Intel 与 Apple 芯片版本均生成 DMG 与 ZIP，Linux 生成 AppImage。产物文件名包含应用名、版本、系统和架构。Windows 也可在本地运行 `npm run dist:win`，产物位于 `dist` 目录。
+在 GitHub 仓库的 **Actions → Build desktop clients** 中手动运行工作流，或推送 `v1.0.5` 这类版本标签。构建完成后，从该次运行的 Artifacts 下载对应系统安装包。Windows 生成安装版与便携版，macOS 的 Intel 与 Apple 芯片版本均生成 DMG 与 ZIP，Linux 生成 AppImage。产物文件名包含应用名、版本、系统和架构。Windows 也可在本地运行 `npm run dist:win`，产物位于 `dist` 目录。
 
 桌面程序打开后自动启动本地服务；点击「停止服务」会关闭监听端口，停止页可再次启动。窗口顶部可修改端口，范围 1024～65535；更改后会重启服务，统一订阅地址随端口更新。端口与订阅数据保存在系统应用数据目录，关闭并重新打开程序后仍会保留。**端口改变后，需要在 Clash 客户端更新订阅地址。** 关闭桌面程序会停止服务。
 
@@ -79,5 +81,6 @@ npm test
 测试覆盖名称冲突、策略组/provider/规则引用、并发去重、持久缓存、过期与故障回退、来源变更、订阅令牌和跨站访问限制。
 
 技术栈：Node.js 内置 HTTP 服务、yaml、原生 HTML/CSS/JavaScript，无数据库或前端构建步骤。
+
 
 

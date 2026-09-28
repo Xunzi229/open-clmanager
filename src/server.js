@@ -6,7 +6,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { SubscriptionService, UserError } from './service.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const assets = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
+const assets = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/icon.png': ['icon.png', 'image/png'] };
 function equal(a, b) { const x = Buffer.from(a || ''), y = Buffer.from(b || ''); return x.length === y.length && timingSafeEqual(x, y); }
 async function jsonBody(request) {
   let body = ''; let size = 0;
@@ -49,7 +49,7 @@ export function createApp(service) {
         if (url.pathname === '/api/refresh' && req.method === 'POST') { await service.refresh(true); return json(200, service.status()); }
       }
       if (req.method === 'GET' && assets[url.pathname]) {
-        const [name, type] = assets[url.pathname]; res.writeHead(200, { 'Content-Type': `${type}; charset=utf-8` });
+        const [name, type] = assets[url.pathname]; res.writeHead(200, { 'Content-Type': type.startsWith('image/') ? type : `${type}; charset=utf-8` });
         return res.end(await readFile(join(root, 'public', name)));
       }
       return json(404, { error: '地址不存在' });

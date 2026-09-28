@@ -76,7 +76,8 @@ app.whenReady().then(async () => {
   catch { port = DEFAULT_PORT; }
   window = new BrowserWindow({
     width: 1180, height: 820, minWidth: 740, minHeight: 600,
-    title: 'Clash Merge', backgroundColor: '#f5f7f4', autoHideMenuBar: true,
+    title: 'Clash Merge', icon: path.join(__dirname, 'assets', 'icon.png'),
+    backgroundColor: '#f5f7f4', autoHideMenuBar: true,
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true },
   });
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
