@@ -36,6 +36,9 @@ jobs:
         shell: bash
         run: test "$GITHUB_REF_NAME" = "v${{ steps.meta.outputs.version }}"
       - run: npm run ${{ matrix.command }}
+      - name: Smoke test packaged desktop app
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node scripts/desktop-smoke.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: Clash-Merge-${{ steps.meta.outputs.version }}-${{ runner.os }}-${{ runner.arch }}
