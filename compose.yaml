@@ -1,0 +1,10 @@
+services:
+  clash-merge:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3838:3838"
+    volumes:
+      - clash-data:/app/data
+volumes:
+  clash-data:
