@@ -1,17 +1,14 @@
 {
   "name": "clash-merge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "本地 Clash 订阅合并与缓存服务",
   "main": "desktop/main.cjs",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "start": "node src/server.js",
     "desktop": "electron .",
-    "dist:win": "electron-builder --win nsis portable",
-    "dist:mac": "electron-builder --mac dmg zip",
-    "dist:linux": "electron-builder --linux AppImage",
+    "dist:win": "electron-builder --publish never --win nsis portable",
+    "dist:mac": "electron-builder --publish never --mac dmg zip",
+    "dist:linux": "electron-builder --publish never --linux AppImage",
     "dev": "node --watch src/server.js",
     "test": "node --test"
   },
@@ -32,13 +29,39 @@
   "build": {
     "appId": "com.clashmerge.desktop",
     "productName": "Clash Merge",
-    "directories": { "output": "dist" },
-    "files": [ "desktop/**/*", "public/**/*", "src/**/*", "package.json" ],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "public/**/*",
+      "src/**/*",
+      "package.json"
+    ],
     "asar": true,
-    "win": { "target": ["nsis", "portable"] },
-    "mac": { "target": ["dmg", "zip"], "category": "public.app-category.utilities" },
-    "linux": { "target": ["AppImage"], "category": "Utility" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   }
 }
