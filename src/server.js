@@ -25,8 +25,17 @@ export function createApp(service) {
       if (!allowedHosts.has(url.hostname)) return json(403, { error: 'Host 不被允许' });
       if (req.headers.origin && req.headers.origin !== url.origin) return json(403, { error: '禁止跨站访问' });
       if (req.headers['sec-fetch-site'] === 'cross-site') return json(403, { error: '禁止跨站访问' });
-      if (url.pathname === '/sub' && req.method === 'GET') {
+      if (['/sub', '/sub/v2rayn'].includes(url.pathname) && req.method === 'GET') {
         if (!equal(url.searchParams.get('token'), service.config.token)) return json(401, { error: '订阅令牌无效' });
+        if (url.pathname === '/sub/v2rayn') {
+          const result = await service.v2raynSubscription();
+          res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8',
+            'Content-Disposition': 'inline; filename="v2rayn-merged.txt"',
+            'profile-update-interval': String(Math.max(1, Math.ceil(service.config.cacheMinutes / 60))),
+            'X-V2rayN-Count': result.count, 'X-V2rayN-Skipped': result.skipped,
+            'X-Clash-Merge-Skipped': result.sourceSkipped, 'X-Clash-Merge-Stale': result.stale });
+          return res.end(result.body);
+        }
         const result = await service.subscription();
         res.writeHead(200, { 'Content-Type': 'text/yaml; charset=utf-8', 'Content-Disposition': 'inline; filename="clash-merged.yaml"',
           'profile-update-interval': String(Math.max(1, Math.ceil(service.config.cacheMinutes / 60))),

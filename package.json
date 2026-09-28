@@ -1,6 +1,6 @@
 {
   "name": "clash-merge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "本地 Clash 订阅合并与缓存服务",
   "main": "desktop/main.cjs",
   "scripts": {

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import YAML from 'yaml';
 import { parseSubscription, mergeSubscriptions } from './merge.js';
+import { makeV2rayNSubscription } from './v2rayn.js';
 
 const MAX_BYTES = 10 * 1024 * 1024;
 export class UserError extends Error {}
@@ -128,15 +129,26 @@ export class SubscriptionService {
     for (let i = 0; i < sources.length; i += 5) results.push(...await Promise.allSettled(sources.slice(i, i + 5).map(s => this.get(s, force, snapshot.cacheMinutes))));
     return results;
   }
-  async subscription() {
+  async resolvedEntries() {
     const snapshot = this.config;
     if (!snapshot.sources.some(s => s.enabled)) throw new UserError('请先添加并启用至少一个订阅');
     const results = await this.refresh(false, snapshot);
     const entries = results.filter(r => r.status === 'fulfilled').map(r => r.value);
     if (!entries.length) throw new UserError('所有订阅均不可用，且没有可用缓存');
     const skipped = results.length - entries.length, stale = entries.filter(e => e.stale).length;
+    return { entries, skipped, stale, snapshot };
+  }
+  async subscription() {
+    const { entries, skipped, stale, snapshot } = await this.resolvedEntries();
     const body = YAML.stringify(mergeSubscriptions(entries, snapshot.ruleMode));
     return { body: `# Clash Merge · available=${entries.length}, skipped=${skipped}, stale=${stale}\n${body}`, skipped, stale };
+  }
+  async v2raynSubscription() {
+    const { entries, skipped: sourceSkipped, stale } = await this.resolvedEntries();
+    const proxies = mergeSubscriptions(entries, 'unified').proxies;
+    const result = makeV2rayNSubscription(proxies);
+    if (!result.count) throw new UserError('没有可转换为 v2rayN 链接的静态节点');
+    return { ...result, sourceSkipped, stale };
   }
   startScheduler() {
     let running = false;

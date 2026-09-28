@@ -10,6 +10,7 @@ import YAML from 'yaml';
 import { parseSubscription, mergeSubscriptions } from '../src/merge.js';
 import { SubscriptionService } from '../src/service.js';
 import { createApp } from '../src/server.js';
+import { makeV2rayNSubscription, toShareLink } from '../src/v2rayn.js';
 import portSettings from '../desktop/port.cjs';
 
 const source = name => ({ id: randomUUID(), name, url: 'https://example.com/sub', enabled: true });
@@ -59,6 +60,32 @@ test('拒绝非 Clash、重复名称和文件 provider', () => {
   assert.throws(() => parseSubscription('proxies: []'));
   assert.throws(() => parseSubscription('proxies: [{name: x, type: ss}, {name: x, type: ss}]'));
   assert.throws(() => parseSubscription('proxy-providers: {x: {type: file, path: /tmp/x}}'));
+});
+test('v2rayN 分享链接保留常见协议的必要参数并跳过不可转换节点', () => {
+  const base = { name: '香港 / 测试', server: 'example.com', port: 443 };
+  const proxies = [
+    { ...base, type: 'ss', cipher: 'aes-128-gcm', password: 'secret' },
+    { ...base, type: 'vmess', uuid: '11111111-1111-1111-1111-111111111111', alterId: 0, cipher: 'auto', network: 'ws', tls: true, servername: 'sni.example', 'ws-opts': { path: '/ws', headers: { Host: 'host.example' } } },
+    { ...base, type: 'vless', uuid: '22222222-2222-2222-2222-222222222222', network: 'grpc', 'grpc-opts': { 'grpc-service-name': 'proxy' }, 'reality-opts': { 'public-key': 'public', 'short-id': '1234' }, 'client-fingerprint': 'chrome' },
+    { ...base, type: 'trojan', password: 'pass word', network: 'ws', 'ws-opts': { path: '/a b' } },
+    { ...base, type: 'hysteria2', password: 'secret', sni: 'sni.example' },
+    { ...base, type: 'tuic', uuid: '33333333-3333-3333-3333-333333333333', password: 'secret', 'congestion-controller': 'bbr' },
+    { ...base, type: 'wireguard', privateKey: 'secret' },
+    { ...base, type: 'ss', cipher: 'aes-128-gcm', password: 'secret', plugin: 'obfs' },
+  ];
+  const result = makeV2rayNSubscription(proxies);
+  const links = Buffer.from(result.body, 'base64').toString().split('\n');
+  assert.equal(result.count, 6); assert.equal(result.skipped, 2);
+  assert.ok(links[0].startsWith('ss://'));
+  const vmess = JSON.parse(Buffer.from(links[1].slice(8), 'base64').toString());
+  assert.equal(vmess.ps, base.name); assert.equal(vmess.net, 'ws'); assert.equal(vmess.host, 'host.example'); assert.equal(vmess.path, '/ws');
+  const vless = new URL(links[2]);
+  assert.equal(vless.searchParams.get('security'), 'reality'); assert.equal(vless.searchParams.get('pbk'), 'public');
+  assert.equal(vless.searchParams.get('serviceName'), 'proxy');
+  assert.equal(new URL(links[3]).searchParams.get('path'), '/a b');
+  assert.ok(links[4].startsWith('hysteria2://')); assert.ok(links[5].startsWith('tuic://'));
+  assert.deepEqual(result.unsupported, { wireguard: 1, ss: 1 });
+  assert.throws(() => toShareLink({ ...base, type: 'vless', uuid: 'x', network: 'unsupported' }));
 });
 test('缓存命中、并发刷新合并以及重启后缓存恢复', async t => {
   let calls = 0;
@@ -117,6 +144,10 @@ test('HTTP 路由、令牌、跨域和配置持久化', async t => {
   assert.equal(service.config.cacheMinutes, 30);
   const sub = await fetch(`${base}/sub?token=${config.token}`);
   assert.equal(sub.status, 200); assert.equal(YAML.parse(await sub.text()).proxies.length, 1);
+  assert.equal((await fetch(`${base}/sub/v2rayn?token=bad`)).status, 401);
+  const v2rayn = await fetch(`${base}/sub/v2rayn?token=${config.token}`);
+  assert.equal(v2rayn.status, 200); assert.equal(v2rayn.headers.get('X-V2rayN-Count'), '1');
+  assert.ok(Buffer.from(await v2rayn.text(), 'base64').toString().startsWith('ss://'));
   assert.equal((await fetch(base + '/api/config', { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: '{}' })).status, 415);
 });
 test('桌面端端口设置可持久化，并拒绝无效端口', async t => {

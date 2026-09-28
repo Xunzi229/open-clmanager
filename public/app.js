@@ -39,6 +39,7 @@ function render() {
   stats(); $('#sources').replaceChildren(); $('#empty').hidden = config.sources.length > 0;
   $('#cache-minutes').value = config.cacheMinutes; $('#rule-mode').value = config.ruleMode;
   $('#subscription-url').value = `${location.origin}/sub?token=${config.token}`;
+  $('#v2rayn-url').value = `${location.origin}/sub/v2rayn?token=${config.token}`;
   config.sources.forEach((source, index) => {
     const card = $('#source-template').content.firstElementChild.cloneNode(true);
     card.querySelector('.source-index').textContent = String(index + 1).padStart(2, '0');
@@ -73,6 +74,10 @@ $('#rule-mode').addEventListener('change', event => { config.ruleMode = event.ta
 $('#copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('#subscription-url').value); toast('订阅地址已复制'); }
   catch { $('#subscription-url').select(); toast('请按 Ctrl+C 复制订阅地址'); }
+});
+$('#copy-v2rayn').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#v2rayn-url').value); toast('v2rayN 订阅地址已复制'); }
+  catch { $('#v2rayn-url').select(); toast('请按 Ctrl+C 复制 v2rayN 订阅地址'); }
 });
 $('#refresh').addEventListener('click', async () => {
   if (dirty) { toast('请先保存修改，再刷新缓存', true); return; }
